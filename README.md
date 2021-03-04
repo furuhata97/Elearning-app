@@ -21,7 +21,7 @@ This project was developed exclusively for Android as bonus app received after c
 - [ReactJS](https://reactjs.org/)
 - [react-navigation](https://reactnavigation.org/)
 - [react-native-gesture-handler](https://github.com/kmagiera/react-native-gesture-handler)
-- [Redux](https://reactjs.org/docs/hooks-intro.html)
+- [React Hooks](https://reactjs.org/docs/hooks-intro.html)
 - [styled-components](https://www.styled-components.com/)
 - [Axios](https://github.com/axios/axios)
 - [react-native-vector-icons](https://github.com/oblador/react-native-vector-icons)
