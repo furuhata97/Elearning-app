@@ -54,7 +54,7 @@ $ yarn android
 
 ## :memo: License
 
-This project is under the MIT license. See the [LICENSE](https://github.com/lukemorales/gobarber-api/blob/master/LICENSE) for more information.
+This project is under the MIT license. See the [LICENSE](https://github.com/furuhata97/Elearning-app/LICENSE) for more information.
 
 ---
 
