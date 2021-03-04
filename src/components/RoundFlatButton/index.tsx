@@ -6,6 +6,8 @@ import { Container, ButtonText } from './styles';
 interface ButtonProps extends RectButtonProperties {
   children: string;
   color: string;
+  width?: number;
+  height?: number;
 }
 
 const RoundFlatButton: React.FC<ButtonProps> = ({

@@ -1,26 +1,35 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { LongPressGestureHandler, State } from 'react-native-gesture-handler';
 
-import { Image } from 'react-native';
+import { Alert, Modal, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import logo from '../../../assets/Logotipo.png';
+
+import { useInfos } from '../../hooks/infos';
+import noImage from '../../../assets/no-image.png';
+
+import ButtonFooter from '../../components/ButtonFooter';
+import Header from '../../components/Header';
+import RoundedBody from '../../components/RoundedBody';
+import RoundFlatButton from '../../components/RoundFlatButton';
 
 import {
   Container,
-  Header,
-  HeaderTop,
-  SearchBox,
-  TextInput,
-  CoursesContainer,
   CoursesHeader,
   CoursesTitle,
+  CourseImage,
+  SingleCourseTitle,
+  CourseClasses,
   CoursesCount,
   CourseList,
   SingleCourseContainer,
-  TabContainer,
-  TabButton,
-  TabText,
-  TabButtonContainer,
+  TrashButton,
+  ModalBox,
+  ModalView,
+  TrashIcon,
+  RemoveText,
+  ModalButtonBox,
+  ModalCancelButton,
 } from './styles';
 import api from '../../services/api';
 
@@ -28,78 +37,206 @@ export interface Course {
   id: string;
   name: string;
   image: string;
+  image_url: string;
+  lessons: [];
 }
 
 const Dashboard: React.FC = () => {
+  const {
+    isClickedHome,
+    savedCoursesList,
+    saveCourse,
+    savedCourses,
+    removeSavedCourse,
+    loadLessons,
+    setSelectedCourseName,
+  } = useInfos();
   const { navigate } = useNavigation();
-  const [inputValue, setInputValue] = useState('');
-  const [courses, setCourses] = useState('');
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [courseCount, setCourseCount] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [courseForRemoval, setCourseForRemoval] = useState<Course>(
+    {} as Course,
+  );
 
   useEffect(() => {
-    api.get('courses').then((response) => {
-      setCourses(response.data);
-    });
+    async function loadCourses(): Promise<void> {
+      try {
+        const response = await api.get('courses');
+        setCourses(response.data[0]);
+        setCourseCount(response.data[1]);
+        await savedCoursesList(response.data[0]);
+      } catch (err) {
+        setCourseCount(0);
+        setCourses([]);
+      }
+    }
+
+    loadCourses();
+  }, [savedCoursesList]);
+
+  useEffect(() => {
+    try {
+      api.get('courses').then((response) => {
+        setCourses(response.data[0]);
+        setCourseCount(response.data[1]);
+      });
+    } catch (err) {
+      setCourseCount(0);
+      setCourses([]);
+    }
+  }, [isClickedHome]);
+
+  const navigateToLessons = useCallback(
+    async (course: Course) => {
+      await loadLessons(course.id);
+      setSelectedCourseName(course.name);
+      navigate('Lessons');
+    },
+    [navigate, loadLessons, setSelectedCourseName],
+  );
+
+  const handleLongPress = useCallback(
+    async (course: Course) => {
+      await saveCourse(course.id);
+      await savedCoursesList(courses);
+      Alert.alert(
+        'Curso salvo',
+        `O curso ${course.name} foi salvo`,
+        [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
+        { cancelable: false },
+      );
+    },
+    [saveCourse, savedCoursesList, courses],
+  );
+
+  const handleTrashButton = useCallback((course: Course) => {
+    setModalVisible(true);
+    setCourseForRemoval(course);
   }, []);
 
-  const navigateToDashboard = useCallback(() => {
-    navigate('Dashboard');
-  }, [navigate]);
-
-  const handleChangeInput = useCallback((value: string) => {
-    setInputValue(value);
+  const handleCancelButton = useCallback(() => {
+    setModalVisible(false);
+    setCourseForRemoval({} as Course);
   }, []);
+
+  const handleRemoveCourse = useCallback(async () => {
+    await removeSavedCourse(courseForRemoval.id);
+    setModalVisible(false);
+    setCourseForRemoval({} as Course);
+  }, [courseForRemoval.id, removeSavedCourse]);
 
   return (
     <Container>
-      <Header>
-        <HeaderTop>
-          <Image source={logo} />
-          <Icon name="power" size={24} color="#FF6680" />
-        </HeaderTop>
-        <SearchBox>
-          <Icon name="search" size={20} color="#C4C4D1" />
-          <TextInput
-            keyboardAppearance="dark"
-            placeholderTextColor="#C4C4D1"
-            placeholder="Busque uma aula"
-            defaultValue=""
-            onChangeText={(text) => handleChangeInput(text)}
-          />
-        </SearchBox>
-      </Header>
-      <Container>
-        <CoursesContainer>
-          <CoursesHeader>
-            <CoursesTitle>Categorias</CoursesTitle>
-            <CoursesCount>43 cursos</CoursesCount>
-          </CoursesHeader>
+      <Modal
+        animationType="fade"
+        transparent
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <ModalBox>
+          <ModalView>
+            <TrashIcon name="trash" size={40} color="#ff6680" />
+            <RemoveText>{`Quer excluir as aulas de ${courseForRemoval.name}?`}</RemoveText>
+            <ModalButtonBox>
+              <Pressable onPress={handleCancelButton}>
+                <ModalCancelButton>Não!</ModalCancelButton>
+              </Pressable>
+              <Pressable onPress={handleRemoveCourse}>
+                <RoundFlatButton color="#ff6680" width={133} height={40}>
+                  Confirmar
+                </RoundFlatButton>
+              </Pressable>
+            </ModalButtonBox>
+          </ModalView>
+        </ModalBox>
+      </Modal>
+
+      <Header dashboard />
+
+      <RoundedBody>
+        <CoursesHeader>
+          <CoursesTitle>
+            {isClickedHome ? 'Categorias' : 'Cursos Salvos'}
+          </CoursesTitle>
+          <CoursesCount>
+            {isClickedHome ? `${courseCount} cursos` : ''}{' '}
+          </CoursesCount>
+        </CoursesHeader>
+        {isClickedHome ? (
           <CourseList
             data={courses}
+            keyExtractor={(course: Course) => course.id}
             numColumns={2}
-            keyExtractor={(course) => course.id}
-            renderItem={({ item: provider }) => (
-              <SingleCourseContainer>
-                <CoursesTitle>Teste</CoursesTitle>
+            renderItem={({ item: course }) => (
+              <LongPressGestureHandler
+                onHandlerStateChange={({ nativeEvent }) => {
+                  if (nativeEvent.state === State.ACTIVE) {
+                    handleLongPress(course);
+                  }
+                }}
+                minDurationMs={800}
+              >
+                <SingleCourseContainer
+                  onPress={() => navigateToLessons(course)}
+                >
+                  <CourseImage
+                    source={
+                      course.image_url !== null
+                        ? {
+                            uri: course.image_url.replace(
+                              'localhost',
+                              '10.0.2.2',
+                            ),
+                          }
+                        : noImage
+                    }
+                  />
+
+                  <SingleCourseTitle numberOfLines={1}>
+                    {course.name}
+                  </SingleCourseTitle>
+                  <CourseClasses>{course.lessons.length} aulas</CourseClasses>
+                </SingleCourseContainer>
+              </LongPressGestureHandler>
+            )}
+          />
+        ) : (
+          <CourseList
+            data={savedCourses}
+            keyExtractor={(course: Course) => course}
+            numColumns={2}
+            renderItem={({ item: course }) => (
+              <SingleCourseContainer onPress={() => navigateToLessons(course)}>
+                <TrashButton onPress={() => handleTrashButton(course)}>
+                  <Icon name="trash" size={20} color="#C4C4D1" />
+                </TrashButton>
+                <CourseImage
+                  source={
+                    course.image_url !== null
+                      ? {
+                          uri: course.image_url.replace(
+                            'localhost',
+                            '10.0.2.2',
+                          ),
+                        }
+                      : noImage
+                  }
+                />
+
+                <SingleCourseTitle numberOfLines={1}>
+                  {course.name}
+                </SingleCourseTitle>
+                <CourseClasses>{course.lessons.length} aulas</CourseClasses>
               </SingleCourseContainer>
             )}
           />
-        </CoursesContainer>
-      </Container>
+        )}
+      </RoundedBody>
 
-      <TabContainer>
-        <TabButtonContainer>
-          <TabButton>
-            <Icon name="home" size={24} color="#FF6680" />
-            <TabText>Home</TabText>
-          </TabButton>
-        </TabButtonContainer>
-        <TabButtonContainer>
-          <TabButton>
-            <Icon name="heart" size={24} color="#FF6680" />
-            <TabText>Salvos</TabText>
-          </TabButton>
-        </TabButtonContainer>
-      </TabContainer>
+      <ButtonFooter />
     </Container>
   );
 };

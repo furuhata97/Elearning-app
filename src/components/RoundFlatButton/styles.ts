@@ -1,8 +1,10 @@
-import styled from 'styled-components/native';
+import styled, { css } from 'styled-components/native';
 import { RectButton } from 'react-native-gesture-handler';
 
 interface ContainerProps {
   color: string;
+  width?: number;
+  height?: number;
 }
 
 export const Container = styled(RectButton)<ContainerProps>`
@@ -14,6 +16,18 @@ export const Container = styled(RectButton)<ContainerProps>`
 
   justify-content: center;
   align-items: center;
+
+  ${(props) =>
+    props.width &&
+    css`
+      width: ${props.width}px;
+    `}
+
+  ${(props) =>
+    props.height &&
+    css`
+      height: ${props.height}px;
+    `}
 `;
 
 export const ButtonText = styled.Text`
