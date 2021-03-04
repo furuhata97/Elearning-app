@@ -182,7 +182,9 @@ const Dashboard: React.FC = () => {
                 <SingleCourseContainer
                   onPress={() => navigateToLessons(course)}
                 >
-                  <CourseImage
+                  {/* Se estiver testando no emulador e a API estiver rodando no localhost será necessário substituir o
+                  localhost pelo IP que o emulador se conecta. Se estiver com o emulador do Android Studio utilize 10.0.2.2 */}
+                  {/* <CourseImage
                     source={
                       course.image_url !== null
                         ? {
@@ -190,6 +192,16 @@ const Dashboard: React.FC = () => {
                               'localhost',
                               '10.0.2.2',
                             ),
+                          }
+                        : noImage
+                    }
+                  /> */}
+
+                  <CourseImage
+                    source={
+                      course.image_url !== null
+                        ? {
+                            uri: course.image_url,
                           }
                         : noImage
                     }
@@ -213,7 +225,7 @@ const Dashboard: React.FC = () => {
                 <TrashButton onPress={() => handleTrashButton(course)}>
                   <Icon name="trash" size={20} color="#C4C4D1" />
                 </TrashButton>
-                <CourseImage
+                {/* <CourseImage
                   source={
                     course.image_url !== null
                       ? {
@@ -221,6 +233,16 @@ const Dashboard: React.FC = () => {
                             'localhost',
                             '10.0.2.2',
                           ),
+                        }
+                      : noImage
+                  }
+                /> */}
+
+                <CourseImage
+                  source={
+                    course.image_url !== null
+                      ? {
+                          uri: course.image_url,
                         }
                       : noImage
                   }
