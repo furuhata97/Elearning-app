@@ -11,6 +11,7 @@
 <p align="center">
   <a href="#rocket-technologies">Technologies</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#information_source-how-to-use">How To Use</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#iphone-screenshots">Screens</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#memo-license">License</a>
 </p>
 
@@ -51,6 +52,14 @@ $ yarn start
 # Run the app (Android)
 $ yarn android
 ```
+
+## :iphone: Technologies
+
+![Screenshot 1](screenshots/elearning0.png)
+![Screenshot 2](screenshots/elearning1.png)
+![Screenshot 3](screenshots/elearning2.png)
+![Screenshot 4](screenshots/elearning3.png)
+![Screenshot 5](screenshots/elearning4.png)
 
 ## :memo: License
 
